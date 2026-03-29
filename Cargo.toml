@@ -2,6 +2,15 @@
 name = "grave"
 version = "0.1.0"
 edition = "2024"
+rust-version = "1.85"
+description = "A lightweight, declarative Rust web framework built on Axum — define routes, state, and config with a single macro"
+license = "MIT"
+repository = "https://github.com/Ismaellima4/grave"
+homepage = "https://github.com/Ismaellima4/grave"
+documentation = "https://docs.rs/grave"
+readme = "README.md"
+keywords = ["web", "framework", "axum", "macro", "http"]
+categories = ["web-programming::http-server"]
 
 [dependencies]
 axum = "0.7"

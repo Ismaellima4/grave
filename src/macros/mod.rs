@@ -57,6 +57,19 @@ macro_rules! __add_routes {
     ($router:expr ,) => { $router };
     ($router:expr) => { $router };
 
+    // NESTED with trailing comma: NESTED "/prefix" => { routes... } , rest...
+    ($router:expr, NESTED $prefix:literal => { $($nested_routes:tt)* } , $($rest:tt)*) => {{
+        let nested = $crate::axum::Router::new();
+        let nested = $crate::__add_routes!(nested, $($nested_routes)*);
+        $crate::__add_routes!($router.nest($prefix, nested), $($rest)*)
+    }};
+    // NESTED as last item: NESTED "/prefix" => { routes... }
+    ($router:expr, NESTED $prefix:literal => { $($nested_routes:tt)* }) => {{
+        let nested = $crate::axum::Router::new();
+        let nested = $crate::__add_routes!(nested, $($nested_routes)*);
+        $router.nest($prefix, nested)
+    }};
+
     // Block handler (no closure params): METHOD "/path" => { body }
     ($router:expr, $method:ident $path:literal => { $($body:tt)* } , $($rest:tt)*) => {
         $crate::__add_routes!(

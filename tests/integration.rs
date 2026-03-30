@@ -37,8 +37,14 @@ app! {
         state.message.clone()
     },
 
-    POST "/users" => |grave::Json(body): grave::Json<CreateUser>| {
-        grave::Json(User::new(body.name))
+    NESTED "/users" => {
+        POST "/" => |grave::Json(body): grave::Json<CreateUser>| {
+            grave::Json(User::new(body.name))
+        },
+
+        GET "/:name" => |Path(name): Path<String>| {
+            format!("User: {}", name)
+        },
     },
 
     GET "/hello/:name" => |Path(name): Path<String>| {
@@ -132,6 +138,44 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
         let body = response.into_body().collect().await.unwrap().to_bytes();
         assert_eq!(&body[..], b"Hello, world!");
+    }
+
+    #[tokio::test]
+    async fn test_group_get_route() {
+        let app = create_app();
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/users/grave")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        assert_eq!(&body[..], b"User: grave");
+    }
+
+    #[tokio::test]
+    async fn test_nested_path_extraction() {
+        let app = create_app();
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/users/antigravity")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        assert_eq!(&body[..], b"User: antigravity");
     }
 
     #[tokio::test]
